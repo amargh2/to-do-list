@@ -1,0 +1,5 @@
+echo "Directory name of new repo?"
+read directory
+mkdir ../$directory
+cp ./* ../$directory -rdf
+echo "New project successful!"

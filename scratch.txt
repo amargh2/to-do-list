@@ -1,0 +1,91 @@
+    /*
+    //
+    const title = document.getElementById('task').value;
+    const description = document.getElementById('description').value;
+    const dueDate = document.getElementById('due').value;
+    const priority = document.getElementById('prio').value;
+    //
+   
+    
+    const task = toDo({title, description, dueDate, priority});
+    tasks.push(task)
+    console.log(tasks)
+
+        const taskCard = document.createElement('div')
+    taskCard.classList += "bg-white flex-shrink-0 flex flex-col flex-nowrap gap-2 py-4 px-5 overflow-hidden shadow rounded-lg col-start-2 col-span-2";
+    if (priority == 'High') {
+        taskCard.className += ' border-2 border-red-500'
+    }
+    else if (priority == 'Medium') {
+            taskCard.className += ' border-2 border-yellow-500'
+        }
+    else if (priority == 'Low') {
+        taskCard.className += ' border-2 border-green-500'
+    }
+
+
+    taskCard.dataset.indexNumber = tasks.length
+    document.getElementById('task-list').appendChild(taskCard);
+    
+    
+    
+    
+    const pTitle = document.createElement('p');
+    const pDescription = document.createElement('p')
+    const pDate = document.createElement('p')
+
+    pTitle.textContent = task.title;
+    pDescription.textContent = task.description;
+    pDate.textContent = `Due by: ${task.dueDate}`;
+
+    console.log(pDate.textContent)
+
+    pTitle.classList = "text-lg text-center font-sans font-semibold";
+    pDate.classList = "text-lg text-center font-sans font-semibold"
+    pDescription.className = 'text-center font-sans'
+
+    const textDiv = document.createElement('div')
+    const classes = ['flex', 'flex-col', 'flex-nowrap']
+    textDiv.classList.add(...classes)    
+    textDiv.appendChild(pTitle)
+    textDiv.appendChild(pDate)
+    textDiv.appendChild(pDescription)
+    taskCard.appendChild(textDiv)
+
+    const buttonDiv = document.createElement('div')
+    buttonDiv.className = 'flex gap-2 justify-center'
+
+    const checkButton = document.createElement('button')
+    const check = new Image();
+    check.src = Check
+    checkButton.classList = 'h-6 w-6 bg-indigo-600 rounded ring-white ring-2 text-white text-center hover:bg-indigo-700 focus:outline-3 outline-white';
+
+    const trashButton = document.createElement('button')
+    const trash = new Image();
+    trash.src = Trash;
+    trashButton.classList = 'h-6 w-6 bg-indigo-600 rounded ring-white ring-2 text-white text-center hover:bg-indigo-700 focus:outline-3 outline-white'
+    
+    const trashDiv = document.createElement('div');
+    const checkDiv = document.createElement('div');
+    checkDiv.appendChild(checkButton);
+    checkButton.dataset.indexNumber = tasks.length;
+    trashDiv.appendChild(trashButton);
+    trashButton.appendChild(trash);
+    trashButton.dataset.indexNumber = tasks.length;
+    checkButton.appendChild(check);
+    buttonDiv.appendChild(checkDiv);
+    buttonDiv.appendChild(trashDiv)
+    taskCard.appendChild(buttonDiv)
+    
+    checkButton.addEventListener('click', () => {
+        if (checkButton.dataset.indexNumber == taskCard.dataset.indexNumber){
+            taskCard.remove()
+        }
+    }) 
+
+    trashButton.addEventListener('click', () => {
+        if (trashButton.dataset.indexNumber == taskCard.dataset.indexNumber) {
+            taskCard.remove()
+        }
+    })
+*/

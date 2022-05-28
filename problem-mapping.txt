@@ -1,0 +1,20 @@
+so i need to figure out whether i am going to figure this out.
+
+basically i need a list that is an object that contains a list of objects.
+
+each object is a task. each task should have a completed/not completed
+
+when you click on a new list, a function should loop through the list of tasks and publish 
+them to the dom correctly
+1
+it might be useful to create a pub/sub model -- i sort of already have the bones.
+
+when a user adds a new list, a new list object will be created.
+
+when the value of the DOM matches the value of a list, a task that is added will be
+pushed to that corresponding list
+
+the list tab needs to correspond with a data-id of some kind.
+
+the list tab buttons need to correspond with the data-id of the list tab
+

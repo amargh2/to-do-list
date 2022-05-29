@@ -71,16 +71,22 @@ const listLogic = (() => {
             }
         })
     };*/
+    const matchId = (id) => {
+        for (let i= 0; i < listIndex.lists.length; i++) {
+            if (listIndex.lists.at(i).listId == id) {
+                console.log('match!!');
+                console.log(listIndex.lists.at(i))
+                console.log(listIndex.lists.at(i).tasks.length+1);
+                console.log(listIndex.lists.at(i).tasks)
+                const listMatch = listIndex.lists.at(i).tasks
+                return listMatch
 
-    
-    
-    const addTaskToList = (randomtask, listIndex) => {
-        listIndex.lists.at(-1).tasks.push(randomtask);
+            }
+        }
     };
-    
+
 
     return {
-
             
             getListIndex: () => {
                 return listIndex
@@ -88,6 +94,28 @@ const listLogic = (() => {
             
             newListId: () => {
                 return getNewListId(listIndex)
+            },
+
+            testMatchId: (id) => {
+                const list = matchId(id);
+                return list
+            },
+
+            getDataIndex: (id) => {
+                const dataIndex = matchId(id).length+1;
+                console.log(dataIndex)
+                return dataIndex
+            },
+
+            assignDataIndex: (id) => {
+               const list = matchId(id)
+            },
+
+            listItemNumber: (id) => {
+                const list = matchId(id)
+                const listItemNumber = list.tasks.length
+                console.log(listItemNumber)
+                return listItemNumber
             },
 
             //creates and adds list to index of lists
@@ -100,19 +128,13 @@ const listLogic = (() => {
             newTask: (title, description, dueDate, priority, complete= false) => {
                 return {title, description, dueDate, priority, complete}
             },
-            
-        
-            matchForList: (id) => {
-                listIndex.lists.forEach(() => {
-                    if (list[id] == id) {
-                    return true; 
-                    }
-                })
-            },
 
-            addTask: (task) => {
-                listIndex.lists.tasks.push(task)
-                tasks.push(task)
+            addTask: (task, id) => {
+                const listToAddTo = matchId(id)
+                console.log(listToAddTo)
+                console.log(listToAddTo)
+                const push = listToAddTo.push(task)
+                return push
             },
 
             addTasksToList: (task) => {
@@ -128,11 +150,25 @@ const listLogic = (() => {
 })()
 
 const helpers = (() => {
+    const selectedListId = ['0']
+    
     return {
+        
+
         storeSelectedListId: (input) => {
-            return input
+            selectedListId.push(input)
+            console.log(input)
+            console.log(selectedListId)
+        },
+
+        getSelectedListId: () => {
+            
+            return selectedListId.at(-1)            
         }
+
     }
+
+
 
 })()
 
@@ -233,10 +269,11 @@ const addListeners = (() => {
 const addTaskCard = (() => {
     
     const listIndex = listLogic.getListIndex()
-    const listId = helpers.storeSelectedListId(listIndex.lists.length)
-    const dataIndex = 2
+
     const makeTaskCardDiv = () => {
-        const listId = helpers.storeSelectedListId(listIndex.lists.length)
+        const listId = helpers.getSelectedListId()
+         
+        //const dataIndex = listLogic.listItemNumber(listId)
         const taskCardDiv = document.createElement('div')
         taskCardDiv.className = "col-span-full task-div bg-white gap-2 py-4 px-5 flex overflow-hidden shadow rounded-lg";
         taskCardDiv.setAttribute('data-list-id', listId)
@@ -362,6 +399,9 @@ const addTaskCard = (() => {
         const listButton = document.createElement('button');
         listButton.textContent = title
         listButton.setAttribute('data-list-id', `${listNumber}`)
+        listButton.addEventListener('click', () => {
+            helpers.storeSelectedListId(listButton.getAttribute('data-list-id'))
+        })
 
         //append containing div
         newListDiv.appendChild(listButton)
@@ -468,11 +508,11 @@ addButton.addEventListener('click', () => {
     const priority = document.getElementById('prio').value;
     
 
-    task = listLogic.newTask(title, description, dueDate, priority);
-    
-    const dataIndex = 2;
+    const task = listLogic.newTask(title, description, dueDate, priority);
+    listLogic.addTask(task, helpers.getSelectedListId())
+    const listIndex = listLogic.getListIndex(); 
+    const dataIndex = listLogic.getDataIndex(helpers.getSelectedListId())
     addTaskCard.appendTaskCard(dataIndex);
-    
 
     })
 
@@ -562,8 +602,7 @@ const getNewListId = (listIndex) => {
  
 
 newListButton.addEventListener('click', () => {
-    console.log(newListButton.getAttribute('data-list-id'))
-    helpers.storeSelectedListId()
+    console.log(helpers.getSelectedListId())
     const title = document.getElementById('new-list-name-main').value
     const list = newList(title, getNewListId(listIndex))
     addListToIndex(list, listIndex)

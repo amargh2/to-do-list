@@ -413,7 +413,7 @@ const addTaskCard = (() => {
                 const dataId = button.dataset.listId
                 
                 if (dataId == helpers.getSelectedListId()) {
-                    button.parentElement.classList.add('border-4', 'border-amber-200')
+                    button.parentElement.classList.add('border-4', 'border-amber-200', 'justify-self-center')
                 }
                 else {
                     button.parentElement.classList.remove('border-4', 'border-amber-200')

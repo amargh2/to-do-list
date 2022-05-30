@@ -275,7 +275,7 @@ const addTaskCard = (() => {
          
         //const dataIndex = listLogic.listItemNumber(listId)
         const taskCardDiv = document.createElement('div')
-        taskCardDiv.className = "col-span-full task-div bg-white gap-2 py-4 px-5 flex overflow-hidden shadow rounded-lg";
+        taskCardDiv.className = "task-div col-span-full task-div bg-white gap-2 py-4 px-5 flex overflow-hidden shadow rounded-lg";
         taskCardDiv.setAttribute('data-list-id', listId)
         //taskCardDiv.dataset.indexNumber = dataIndex;        
         return taskCardDiv
@@ -397,12 +397,47 @@ const addTaskCard = (() => {
 
         //div for the main button and text
         const listButton = document.createElement('button');
-        listButton.textContent = title
+        listButton.textContent = title;
+        listButton.className += 'list-tab-button'
         listButton.setAttribute('data-list-id', `${listNumber}`)
         listButton.addEventListener('click', () => {
             helpers.storeSelectedListId(listButton.getAttribute('data-list-id'))
         })
 
+        //add listeners to button
+        listButton.addEventListener ('click', () => {
+            
+            //checks data id and adds border to selected tab
+            const allButtons = document.querySelectorAll('.list-tab-button')
+            allButtons.forEach((button) => {
+                const dataId = button.dataset.listId
+                
+                if (dataId == helpers.getSelectedListId()) {
+                    button.parentElement.classList.add('border-4', 'border-amber-200')
+                }
+                else {
+                    button.parentElement.classList.remove('border-4', 'border-amber-200')
+                }
+                
+            })
+
+            //hides and reveals tasks for selected list tab
+            const listItems = document.querySelectorAll(`.task-div`)
+            console.log(listItems)
+            listItems.forEach((item) => {
+                const currentListId = helpers.getSelectedListId()
+                const itemId = item.dataset.listId
+                if (currentListId == itemId) {
+                    item.classList.remove('hidden')
+                }
+                else if (currentListId != itemId) {
+                    item.classList.add('hidden')
+                }
+            })
+            
+            
+        })
+        
         //append containing div
         newListDiv.appendChild(listButton)
 
@@ -428,10 +463,14 @@ const addTaskCard = (() => {
                 console.log(deleteButton.dataset.listId)
                 if (deleteButton.dataset.listId == div.dataset.listId) {
                     div.remove()
-                    
+                    const divs = document.querySelectorAll(`[data-list-id="${deleteButton.dataset.listId}"]`)
+                    divs.forEach((card) => {
+                        card.remove()
+                    })
                 }
             })
         })
+        
         //svg
         const deletePlaylist = new Image();
         deletePlaylist.src = RemoveList;
@@ -459,15 +498,7 @@ const addTaskCard = (() => {
         editAndDeleteButtonDiv.appendChild(editButton);
         
         
-        listButton.addEventListener ('click', () => {
-            const listItems = document.querySelectorAll(`[data-list-id-${listNumber}]`)
-            
-            listItems.forEach((item) => {
-                if (item.dataset.listId == listButton.dataset.listId) {
-                    addListeners.toggleVisible(item)
-                }
-            })
-        })
+        
 
     }
 

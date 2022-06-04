@@ -9,11 +9,12 @@ import { list } from 'postcss';
 //logic for lists -- adding lists/tasks/appending/tracking complete and incomplete
 
 const listLogic = (() => {
-    /*initializing arrays*/
+    //initializing counter variables for lists and tasks (for unique id assignment)
     
     let taskCounter = 0
     let listCounter = 0
 
+    //index of lists; initializing default list
     const listIndex = {
         lists: [
             {listName: 'default list',
@@ -23,21 +24,14 @@ const listLogic = (() => {
         ]
     };
     
-    const defaultList = {
-        name: 'default list',
-        id: '0',
-        tasks: []
-    };
-
-
+    //increments the counter and returns a new list id
     const getNewListId= () => {
         parseInt(listCounter++)
         return listCounter
     }
     
     //factory function for new lists
-    const listId = 0
-    console.log(listId)
+    
     const newList = (listName, listId) => {
         return {
         listName: listName,
@@ -46,14 +40,14 @@ const listLogic = (() => {
         } 
     };
 
-    /*factory function*/ 
+    /*factory function for tasks*/ 
 
     const newTask = (title, description, dueDate, priority, complete = false) => {
         return {title, description, dueDate, priority, complete, taskId}
     };
     
 
-    //finds the appropriate list with a provided id
+    //finds the appropriate list with a provided id at the list's task array
     const matchId = ()=> {
         for (let i= 0; i < listIndex.lists.length; i++) {
             
@@ -66,6 +60,8 @@ const listLogic = (() => {
         }
     };
 
+
+    //finds the list at the level of the list
     const matchIdAtList = () => {
         for (let i = 0; i < listIndex.lists.length; i++) {
             
@@ -82,25 +78,23 @@ const listLogic = (() => {
 
     return {
             
-
+            //makes the list index available
             getListIndex: () => {
                 return listIndex
             },
             
+            //gets current task count
             getTaskCount: () => {
                 return taskCounter
             },
 
+            //gets current list count
             getListId: () => {
                 parseInt(listCounter)
                 return listCounter
             },
 
-            testMatchId: () => {
-                const list = matchId();
-                return list
-            },
-
+            //gets a new data index number for newly created tasks
             newDataIndex: () => {
                 const differentDataIndex = parseInt(taskCounter++)
                 return differentDataIndex
@@ -141,18 +135,21 @@ const listLogic = (() => {
                 }
             },
 
+            //deletes appropriate task from the list index
             removeTask: (id, dataIndex) => {
                 const targetList = matchId(id);
-                console.log(targetList)
                 const targetTaskIndex = targetList.findIndex(task => task.dataIndex == dataIndex);
                 console.log(targetList[targetTaskIndex])
                 targetList.splice(targetTaskIndex, 1)
+                console.log(targetList)
             },
 
+            //returns a new list
             createNewList: (name, ListID) => {
                 return ({name, ListID}) 
             },
 
+            //deletes a list and all associated tasks from the list index
             deleteList: (id) => {
                 const listForDeletion = matchIdAtList(id);
                 console.log(listForDeletion)
@@ -164,13 +161,15 @@ const listLogic = (() => {
                 listIndex.lists.splice(indexToChange, 1)
                 
             },
-
-            
             
         }
 })()
 
+
+//this probably could be rolled into list logic -- originally meant to try a pub/sub;
+//serves the purpose of storing and returning the last clicked list tab
 const helpers = (() => {
+    
     const selectedListId = ['0']
     
     return {
@@ -196,7 +195,8 @@ const helpers = (() => {
 
 
 
-/*Listener for new task dropdown button - changes display from hidden to block*/
+/*listeners for the persistent html elements; dynamic elements have listeners added
+at the time of their generation*/
 
 
 const addListeners = (() => { 
@@ -218,6 +218,7 @@ const addListeners = (() => {
         }
     }
 
+//main button = + button; main ui dropdown toggle
 
     const mainButton = document.getElementById('main-button');
     mainButton.addEventListener('click', ()=> {
@@ -236,25 +237,31 @@ const addListeners = (() => {
         
     })
 
-   //dropdown toggle for the new list input 
+   
+    //dropdown toggle for the new list input 
+   
    const newListButton = document.getElementById('new-list-main');
    const newListForm = document.getElementById('new-list-form')
    newListButton.addEventListener('click', () => {
     toggleVisible(newListForm)
     })
 
+    
+    //new list button -- creates list object and adds it to the index
+    
     const makeNewListButton = document.getElementById('new-list-menu-check')
 
     makeNewListButton.addEventListener('click', () => {
             const listIndex = listLogic.getListIndex()
             console.log(helpers.getSelectedListId())
             const title = document.getElementById('new-list-name-main').value
-            
             const newList = listLogic.createListAndAddToIndex(title)
-            console.log(listIndex.lists)
-    })
+    
+        })
+    
     
     //closes new list drop down
+    
     const cancelNewListButton = document.getElementById('cancel-new-list-menu-x');
     cancelNewListButton.addEventListener('click', () => {
         
@@ -324,19 +331,17 @@ const addListeners = (() => {
 const addTaskCard = (() => {
     
     const listIndex = listLogic.getListIndex()
-
+    
+    //return the containing task card
     const makeTaskCardDiv = () => {
-        const listId = helpers.getSelectedListId()
-        console.log(helpers.getSelectedListId()) 
+        const listId = helpers.getSelectedListId() 
         const taskCardDiv = document.createElement('div')
         taskCardDiv.className = "task-div col-span-full task-div bg-white gap-2 py-4 px-5 flex overflow-hidden shadow rounded-lg";
-        taskCardDiv.setAttribute('data-list-id', listId)
-        //taskCardDiv.dataset.indexNumber = dataIndex;        
+        taskCardDiv.setAttribute('data-list-id', listId)        
         return taskCardDiv
     }
     
     /*returns the title/description/date appended to a text-div*/
-    
     const makeTextDiv = (title, description, dueDate) => {
         const pTitle = document.createElement('p');
         const pDescription = document.createElement('p')
@@ -359,33 +364,41 @@ const addTaskCard = (() => {
         return textDiv
     }
     
-    /*function that returns button div for taskCard with functional svgs*/
+    /*returns button div for taskCard with svgs as buttons and listeners appended*/
     const makeButtons = (dataIndex, taskCard) => { 
 
+        //containing button div
         const buttonDiv = document.createElement('div')
         buttonDiv.className = 'flex gap-2 justify-center'
-
+        
+        //check button and svg creation
         const checkButton = document.createElement('button')
         const check = new Image();
         check.src = Check
         checkButton.classList = 'h-6 w-6 bg-indigo-600 rounded ring-white ring-2 text-white text-center hover:bg-indigo-700 focus:outline-3 outline-white';
 
+        //trash button and svg creation
         const trashButton = document.createElement('button')
         const trash = new Image();
         trash.src = Trash;
         trashButton.classList = 'h-6 w-6 bg-indigo-600 rounded ring-white ring-2 text-white text-center hover:bg-indigo-700 focus:outline-3 outline-white'
         
+        //creates divs for each button
         const trashDiv = document.createElement('div');
         const checkDiv = document.createElement('div');
         checkDiv.appendChild(checkButton);
-        checkButton.dataset.indexNumber = dataIndex;
+        checkButton.dataset.indexNumber = dataIndex; //data-index is unique to each task
+        
         trashDiv.appendChild(trashButton);
         trashButton.appendChild(trash);
-        trashButton.dataset.indexNumber = dataIndex;
+        trashButton.dataset.indexNumber = dataIndex; //data-index is unique to each task
+        
         checkButton.appendChild(check);
         buttonDiv.appendChild(checkDiv);
         buttonDiv.appendChild(trashDiv)
 
+
+        //check button -- when clicked, turns task card green and ticks the list complete/incomplete
         checkButton.addEventListener ('click', () => {
             const divs = document.querySelectorAll('.task-div')
             
@@ -393,7 +406,7 @@ const addTaskCard = (() => {
                 const divDataIndex = div.getAttribute('data-index')
                 const checkButtonDataIndex = checkButton.getAttribute('data-index-number')
                 if (divDataIndex == checkButtonDataIndex) {
-                    listLogic.completeTask(matchId(helpers.getSelectedListId()), divDataIndex)
+                    listLogic.completeTask(helpers.getSelectedListId(), divDataIndex)
                     if (div.classList.contains('bg-green-200')) {
                         div.classList.remove('bg-green-200')
                     }
@@ -410,6 +423,8 @@ const addTaskCard = (() => {
             })
         })
 
+        
+        //trash button deletes div and removes the task from the corresponding list
         trashButton.addEventListener ('click', () => {
             const divs = document.querySelectorAll('.task-div')
             
@@ -444,7 +459,7 @@ const addTaskCard = (() => {
         return taskCard
     }
    
- 
+    //appends all created elements to the containing div
     const appendElements = (taskCardDiv, textDiv, buttonDiv, priority) => {
         const taskList = document.getElementById('task-list');
         taskList.appendChild(taskCardDiv);
@@ -454,12 +469,14 @@ const addTaskCard = (() => {
         return taskCardDiv
     }
 
+    //tab for list browsing
     const makeNewListTab = (title) => {
-        //container div where new lists will be appended
+        //container div where new list tab buttons will be appended
         const tabContainer = document.getElementById('tab-container');
-
+        
+        //list number is unique and increments the list counter variable
         const listNumber = listLogic.getListId()
-        console.log(listNumber)
+        
         //new div container for the list tab/button
         const newListDiv = document.createElement('div');
         newListDiv.className = 'list-button-container';
@@ -498,7 +515,6 @@ const addTaskCard = (() => {
 
             //hides and reveals tasks for selected list tab
             const listItems = document.querySelectorAll(`.task-div`)
-            console.log(listItems)
             listItems.forEach((item) => {
                 const currentListId = helpers.getSelectedListId()
                 const itemId = item.dataset.listId
@@ -530,6 +546,8 @@ const addTaskCard = (() => {
         const deleteButton = document.createElement('button');
         deleteButton.setAttribute('data-list-id', `${listNumber}`)
         deleteButton.className = 'flex delete-list justify-center';
+        
+        //listener for delete-list button
         deleteButton.addEventListener('click', ()=> {
             console.log(deleteButton.dataset.listId)
             const listDivs = document.querySelectorAll('.list-div')
@@ -549,11 +567,11 @@ const addTaskCard = (() => {
         })
         
         //svg
-        const deletePlaylist = new Image();
-        deletePlaylist.src = RemoveList;
+        const deleteListIcon = new Image();
+        deleteListIcon.src = RemoveList;
 
         //append
-        deleteButton.appendChild(deletePlaylist);
+        deleteButton.appendChild(deleteListIcon);
         deleteButtonDiv.appendChild(deleteButton);
         editAndDeleteButtonDiv.appendChild(deleteButtonDiv);
 
@@ -581,6 +599,8 @@ const addTaskCard = (() => {
 
     //public functions
     return { 
+        //takes the dataindex (taskid), title, description and other input and creates
+        //the task card on the page
         appendTaskCard: (dataIndex) => {
         
         const title = document.getElementById('task').value
@@ -598,6 +618,8 @@ const addTaskCard = (() => {
         prioCheckedTaskDiv.setAttribute('data-index', dataIndex)
         appendElements(prioCheckedTaskDiv, makeTextDiv(title, description, dueDate), makeButtons(dataIndex, prioCheckedTaskDiv))},
     
+
+        //new list
         newListTab: (listIndex) => {
             const title = document.getElementById('new-list-name-main').value;
             makeNewListTab(title);   
@@ -673,17 +695,7 @@ const matchId = (id) => {
 
 const listIndex = listLogic.getListIndex()
 
-const getNewListId = (listIndex) => {
 
-    if (listIndex.lists.length == 0) {
-        var listId = 1
-        return listId
-    }
-    else if (listIndex.lists.length > 0) {
-        var listId = listIndex.lists.at(-1).listId+1
-        return listId
-    }
-}
 
 
 

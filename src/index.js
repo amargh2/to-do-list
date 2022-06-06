@@ -6,36 +6,34 @@ import RemoveList from './removeplaylist.svg'
 import { list } from 'postcss';
 
 
+
+
 //logic for lists -- adding lists/tasks/appending/tracking complete and incomplete
 
 const listLogic = (() => {
-    /*initializing arrays*/
+    //initializing counter variables for lists and tasks (for unique id assignment)
     
+    let taskCounter = 0
+    let listCounter = 0
+
+    //index of lists; initializing default list
     const listIndex = {
-        lists: []
+        lists: [
+            {listName: 'default list',
+            listId:'0',
+            tasks: []
+            }
+        ]
     };
     
-    const defaultList = {
-        name: 'default list',
-        id: '0',
-        tasks: []
-    };
-
-    //gets ListId based on the 
-    const getNewListId = (listIndex) => {
-
-        if (listIndex.lists.length == 0) {
-            var listId = 1
-            return listId
-        }
-        else if (listIndex.lists.length > 0) {
-            var listId = listIndex.lists.at(-1).listId+1
-            return listId
-        }
-    };
+    //increments the counter and returns a new list id
+    const getNewListId= () => {
+        parseInt(listCounter++)
+        return listCounter
+    }
     
     //factory function for new lists
-    const listId = getNewListId(listIndex)
+    
     const newList = (listName, listId) => {
         return {
         listName: listName,
@@ -44,40 +42,20 @@ const listLogic = (() => {
         } 
     };
 
-    /*factory function*/ 
+    /*factory function for tasks*/ 
 
     const newTask = (title, description, dueDate, priority, complete = false) => {
-        return {title, description, dueDate, priority, complete}
-    };
-
-    //add list to index
-    const appendList = (list, listIndex) => {
-        listIndex.lists.push(list)
+        return {title, description, dueDate, priority, complete, taskId}
     };
     
-    //adds a task to task list in array in appropriate list
-    /*const addToList = (task, listId, listIndex) => {
-        for (list in listIndex.lists) {
-            if (list[listId] == listId) {
-                list.push(task)
-            }
-        }
-    };
 
-    const matchListId = (id)=> {
-        listIndex.lists.forEach(list, () => {
-            if (list[id] == id) {
-                return true
-            }
-        })
-    };*/
-    const matchId = (id) => {
+    //finds the appropriate list with a provided id at the list's task array
+    const matchId = (id)=> {
         for (let i= 0; i < listIndex.lists.length; i++) {
+            console.log(id)
+            console.log(listIndex.lists.at(i).tasks)
             if (listIndex.lists.at(i).listId == id) {
-                console.log('match!!');
-                console.log(listIndex.lists.at(i))
-                console.log(listIndex.lists.at(i).tasks.length+1);
-                console.log(listIndex.lists.at(i).tasks)
+                console.log('yerp')
                 const listMatch = listIndex.lists.at(i).tasks
                 return listMatch
 
@@ -85,71 +63,127 @@ const listLogic = (() => {
         }
     };
 
+    //add list to master index
+
+    const addListToIndex = (list, listIndex) => {
+        listIndex.lists.push(list)
+    };
+    
+
+    //finds the list at the level of the list
+    const matchIdAtList = () => {
+        for (let i = 0; i < listIndex.lists.length; i++) {
+            
+            if (listIndex.lists.at(i).listId == helpers.getSelectedListId()) {
+                console.log('bingo')
+                const match = listIndex.lists.at(i)
+                return match
+            }
+        
+        }
+    }
+
+    
+   
 
     return {
             
+            //return the list index
             getListIndex: () => {
                 return listIndex
             },
             
-            newListId: () => {
-                return getNewListId(listIndex)
+            //gets current task count
+            getTaskCount: () => {
+                return taskCounter
             },
 
-            testMatchId: (id) => {
-                const list = matchId(id);
-                return list
+            //gets current list count
+            getListId: () => {
+                parseInt(listCounter)
+                return listCounter
             },
 
-            getDataIndex: (id) => {
-                const dataIndex = matchId(id).length+1;
-                console.log(dataIndex)
-                return dataIndex
+            //gets a new data index number for newly created tasks
+            newDataIndex: () => {
+                const differentDataIndex = parseInt(taskCounter++)
+                return differentDataIndex
             },
 
-            assignDataIndex: (id) => {
-               const list = matchId(id)
-            },
-
-            listItemNumber: (id) => {
-                const list = matchId(id)
-                const listItemNumber = list.tasks.length
-                console.log(listItemNumber)
-                return listItemNumber
-            },
 
             //creates and adds list to index of lists
             createListAndAddToIndex: (listName) => {
-                const list = newList(listName, getNewListId(), listIndex)
+                const list = newList(listName, getNewListId())
                 addListToIndex(list, listIndex)
             },
 
             //creates and returns a new task object
-            newTask: (title, description, dueDate, priority, complete= false) => {
-                return {title, description, dueDate, priority, complete}
+            newTask: (title, description, dueDate, priority, dataIndex, complete= false) => {
+                const listId = helpers.getSelectedListId()
+                return {title, description, dueDate, priority, dataIndex, listId, complete}
+                
             },
 
-            addTask: (task, id) => {
+            //gets currently selected list id with matchId and pushes to the matched list
+            addTask: (task) => {
+                const id = task.listId
+                console.log(id)
                 const listToAddTo = matchId(id)
                 console.log(listToAddTo)
-                console.log(listToAddTo)
-                const push = listToAddTo.push(task)
-                return push
+                listToAddTo.push(task)
+                
             },
 
-            addTasksToList: (task) => {
-                taskLists = taskList()
-                taskLists.list1.tasks.push(task)
+            //marks a task complete when the corresponding check button is clicked and unclicked;
+            //mapped in addListeners()
+            completeTask: (id, dataIndex) => {
+                const list = matchId(id);
+                console.log(list)
+                const targetTask = list.findIndex(task => task.dataIndex == dataIndex)
+                console.log(targetTask)
+                if (list[targetTask].complete == true) {
+                    list[targetTask].complete = false
+                }
+                else {
+                    list[targetTask].complete = true
+                }
             },
 
-            
-            createNewList: ({name, ListID}) => {
+            //deletes appropriate task from the list index
+            removeTask: (id, dataIndex) => {
+                const targetList = matchId(id);
+                const targetTaskIndex = targetList.findIndex(task => task.dataIndex == dataIndex);
+                console.log(targetList[targetTaskIndex])
+                targetList.splice(targetTaskIndex, 1)
+                console.log(targetList)
+            },
+
+            //returns a new list
+            createNewList: (name, ListID) => {
                 return ({name, ListID}) 
-            }
+            },
+
+            //deletes a list and all associated tasks from the list index
+            deleteList: (id) => {
+                const listForDeletion = matchIdAtList(id);
+                console.log(listForDeletion)
+                
+                const indexToChange = listIndex.lists.indexOf(listForDeletion)
+                console.log(indexToChange)
+                console.log(listIndex.lists[indexToChange])
+                console.log(listIndex)
+                listIndex.lists.splice(indexToChange, 1)
+                
+            },
+            
         }
 })()
 
+
+//this probably could be rolled into list logic -- originally meant to try a pub/sub;
+//serves the purpose of storing and returning the last clicked list tab
 const helpers = (() => {
+    
     const selectedListId = ['0']
     
     return {
@@ -173,116 +207,54 @@ const helpers = (() => {
 })()
 
 
+//local storage module -- stores list object as JSON and generates the proper page elements
+// from the list object
 
-
-/*Listener for new task dropdown button - changes display from hidden to block*/
-
-
-const addListeners = (() => { 
-
-
-    const toggleVisible = (element) => {
-        if (element.classList.contains('hidden')) {
-            element.classList.add('block')
-            element.classList.remove('hidden')
-        }
-
-        else if (element.classList.contains('block')) {
-            element.classList.add('hidden')
-            element.classList.remove('block')
-        }
+const localStorage = (() => {
+    const storeList = () => {
+        const listIndex = listLogic.getListIndex()
+        window.localStorage.setItem('storedList', JSON.stringify(listIndex))
+    }
+    
+    const getStoredList = () => {
+        const storedList = window.localStorage.getItem('storedList')
+        const parsedList = JSON.parse(storedList)
+        return parsedList
     }
 
+    const list = getStoredList();
+    console.log(getStoredList())
 
-    const mainButton = document.getElementById('main-button');
-    mainButton.addEventListener('click', ()=> {
-    const dropDown = document.getElementById('dropdown-menu');
-        if (dropDown.classList.contains('hidden')) {
-            dropDown.classList.add('block')
-            dropDown.classList.remove('hidden')
-        }
+    return {
         
-        else {
-            dropDown.classList.remove('block')
-            dropDown.classList.add('hidden')
-        }
-        
-    })
+        store: () => {
+            return storeList()
+        },
 
-    
-   const newListButton = document.getElementById('new-list-main');
-   const newListForm = document.getElementById('new-list-form')
-   newListButton.addEventListener('click', () => {
-    toggleVisible(newListForm)
-    })
-
-    const makeNewListButton = document.getElementById('new-list-menu-check')
-
-    makeNewListButton.addEventListener('click', () => {
-        
-    })
-    
-    
-    const cancelNewListButton = document.getElementById('cancel-new-list-menu-x');
-    cancelNewListButton.addEventListener('click', () => {
-        const newListForm  = document.getElementById('new-list-form');
-        if (newListForm.classList.contains('hidden')) {
-            newListForm.classList.add('block');
-            newListForm.classList.remove('hidden');
-        }
-        else {
-            newListForm.classList.remove('block')
-            newListForm.classList.add('hidden')
+        get: () => {
+            return getStoredList()
         }
 
-    })
-
-
-
-    const addButton = document.getElementById('add-button')
-    const cancelAddButton = document.getElementById('cancel-add') 
-    cancelAddButton.addEventListener('click', () => {
-        const dropDown = document.getElementById('new-task-form');
-        dropDown.classList.add('hidden')
-        dropDown.classList.remove('block')
-    })
-
-    const newTaskButton = document.getElementById('new-task');
-    newTaskButton.addEventListener('click', () => {
-        const taskForm = document.getElementById('new-task-form');
-        if (taskForm.classList.contains('hidden')) {
-            taskForm.classList.add('block');
-            taskForm.classList.remove('hidden');
-        }
-        else {
-            taskForm.classList.remove('block')
-            taskForm.classList.add('hidden')
-        }
-
-    })
-    
+    }
 
 })()
 
-
+//adds list tabs and tasks
 
 const addTaskCard = (() => {
     
     const listIndex = listLogic.getListIndex()
-
+    
+    //return the containing task card
     const makeTaskCardDiv = () => {
-        const listId = helpers.getSelectedListId()
-         
-        //const dataIndex = listLogic.listItemNumber(listId)
+        const listId = helpers.getSelectedListId() 
         const taskCardDiv = document.createElement('div')
         taskCardDiv.className = "task-div col-span-full task-div bg-white gap-2 py-4 px-5 flex overflow-hidden shadow rounded-lg";
-        taskCardDiv.setAttribute('data-list-id', listId)
-        //taskCardDiv.dataset.indexNumber = dataIndex;        
+        taskCardDiv.setAttribute('data-list-id', listId)        
         return taskCardDiv
     }
     
     /*returns the title/description/date appended to a text-div*/
-    
     const makeTextDiv = (title, description, dueDate) => {
         const pTitle = document.createElement('p');
         const pDescription = document.createElement('p')
@@ -305,48 +277,79 @@ const addTaskCard = (() => {
         return textDiv
     }
     
-    /*function that returns button div for taskCard with functional svgs*/
+    /*returns button div for taskCard with svgs as buttons and listeners appended*/
     const makeButtons = (dataIndex, taskCard) => { 
 
+        //containing button div
         const buttonDiv = document.createElement('div')
         buttonDiv.className = 'flex gap-2 justify-center'
-
+        
+        //check button and svg creation
         const checkButton = document.createElement('button')
         const check = new Image();
         check.src = Check
         checkButton.classList = 'h-6 w-6 bg-indigo-600 rounded ring-white ring-2 text-white text-center hover:bg-indigo-700 focus:outline-3 outline-white';
 
+        //trash button and svg creation
         const trashButton = document.createElement('button')
         const trash = new Image();
         trash.src = Trash;
         trashButton.classList = 'h-6 w-6 bg-indigo-600 rounded ring-white ring-2 text-white text-center hover:bg-indigo-700 focus:outline-3 outline-white'
         
+        //creates divs for each button
         const trashDiv = document.createElement('div');
         const checkDiv = document.createElement('div');
         checkDiv.appendChild(checkButton);
-        checkButton.dataset.indexNumber = dataIndex;
+        checkButton.dataset.indexNumber = dataIndex; //data-index is unique to each task
+        
         trashDiv.appendChild(trashButton);
         trashButton.appendChild(trash);
-        trashButton.dataset.indexNumber = dataIndex;
+        trashButton.dataset.indexNumber = dataIndex; //data-index is unique to each task
+        
         checkButton.appendChild(check);
         buttonDiv.appendChild(checkDiv);
         buttonDiv.appendChild(trashDiv)
 
+
+        //check button -- when clicked, turns task card green and ticks the list complete/incomplete
         checkButton.addEventListener ('click', () => {
             const divs = document.querySelectorAll('.task-div')
             
             divs.forEach( (div) => {
-                if (div.getAttribute('data-index') == checkButton.getAttribute('data-index-number')) {
-                    div.remove()
+                const divDataIndex = div.getAttribute('data-index')
+                const checkButtonDataIndex = checkButton.getAttribute('data-index-number')
+                if (divDataIndex == checkButtonDataIndex) {
+                    listLogic.completeTask(helpers.getSelectedListId(), divDataIndex)
+                    localStorage.store();
+                    if (div.classList.contains('bg-green-200')) {
+                        div.classList.remove('bg-green-200')
+                    }
+                    else {
+                        div.classList.add('bg-green-200')
+                    }
+                    if (div.classList.contains('border-white')) {
+                        div.classList.remove('border-white')
+                    }
+                    else {
+                        div.classList.add('border-white')
+                    }
                 }
             })
         })
 
+        
+        //trash button deletes div and removes the task from the corresponding list
         trashButton.addEventListener ('click', () => {
             const divs = document.querySelectorAll('.task-div')
             
             divs.forEach( (div) => {
-                if (div.getAttribute('data-index') == trashButton.getAttribute('data-index-number')) {
+                const divDataIndex = div.getAttribute('data-index')
+                console.log(divDataIndex)
+                const trashButtonDataIndex = trashButton.getAttribute('data-index-number')
+                console.log(trashButtonDataIndex)
+                if (divDataIndex == trashButtonDataIndex) {
+                    listLogic.removeTask(helpers.getSelectedListId(), divDataIndex)
+                    localStorage.store()
                     div.remove()
                 }
             })
@@ -371,7 +374,7 @@ const addTaskCard = (() => {
         return taskCard
     }
    
- 
+    //appends all created elements to the containing div
     const appendElements = (taskCardDiv, textDiv, buttonDiv, priority) => {
         const taskList = document.getElementById('task-list');
         taskList.appendChild(taskCardDiv);
@@ -381,11 +384,11 @@ const addTaskCard = (() => {
         return taskCardDiv
     }
 
-    const makeNewListTab = (title) => {
-        //container div where new lists will be appended
+    //tab for list browsing
+    const makeNewListTab = (title, listNumber) => {
+        //container div where new list tab buttons will be appended
         const tabContainer = document.getElementById('tab-container');
-
-        const listNumber = listLogic.newListId(listLogic.getListIndex())
+    
         
         //new div container for the list tab/button
         const newListDiv = document.createElement('div');
@@ -413,7 +416,7 @@ const addTaskCard = (() => {
                 const dataId = button.dataset.listId
                 
                 if (dataId == helpers.getSelectedListId()) {
-                    button.parentElement.classList.add('border-4', 'border-amber-200')
+                    button.parentElement.classList.add('border-4', 'border-amber-200', 'justify-self-center')
                 }
                 else {
                     button.parentElement.classList.remove('border-4', 'border-amber-200')
@@ -421,9 +424,10 @@ const addTaskCard = (() => {
                 
             })
 
+            
+
             //hides and reveals tasks for selected list tab
             const listItems = document.querySelectorAll(`.task-div`)
-            console.log(listItems)
             listItems.forEach((item) => {
                 const currentListId = helpers.getSelectedListId()
                 const itemId = item.dataset.listId
@@ -455,6 +459,12 @@ const addTaskCard = (() => {
         const deleteButton = document.createElement('button');
         deleteButton.setAttribute('data-list-id', `${listNumber}`)
         deleteButton.className = 'flex delete-list justify-center';
+         
+        //svg
+         const deleteListIcon = new Image();
+         deleteListIcon.src = RemoveList;
+        
+         //listener for delete-list button
         deleteButton.addEventListener('click', ()=> {
             console.log(deleteButton.dataset.listId)
             const listDivs = document.querySelectorAll('.list-div')
@@ -469,14 +479,14 @@ const addTaskCard = (() => {
                     })
                 }
             })
+            listLogic.deleteList(helpers.getSelectedListId())
+            console.log(listLogic.getListIndex)
         })
         
-        //svg
-        const deletePlaylist = new Image();
-        deletePlaylist.src = RemoveList;
+        
 
         //append
-        deleteButton.appendChild(deletePlaylist);
+        deleteButton.appendChild(deleteListIcon);
         deleteButtonDiv.appendChild(deleteButton);
         editAndDeleteButtonDiv.appendChild(deleteButtonDiv);
 
@@ -496,162 +506,203 @@ const addTaskCard = (() => {
         editButton.appendChild(editListIcon);
         editButtonDiv.appendChild(editButton);
         editAndDeleteButtonDiv.appendChild(editButton);
-        
-        
-        
-
     }
+    
+    //takes all elements, assembles, and adds to the page
+
+    const appendTaskCard = (dataIndex, title, description, dueDate, priority) => { 
+        const prioCheckedTaskDiv = checkPrio(makeTaskCardDiv(), priority)
+        prioCheckedTaskDiv.setAttribute('data-index', dataIndex)
+        appendElements(prioCheckedTaskDiv, makeTextDiv(title, description, dueDate), makeButtons(dataIndex, prioCheckedTaskDiv))
+    }
+
+    /*const appendListsAndTasksFromStorage = () => {
+        const listIndex = localStorage.get()
+        console.log(listIndex)
+        listIndex.lists.forEach(list => {
+            const title = list.listName
+            console.log(title)
+            const listNumber = list.listId
+            console.log(listNumber)
+            makeNewListTab(title, listNumber)
+            list.tasks.forEach(task => {
+                const dataIndex = task.dataIndex
+                const title = task.title
+                console.log(title)
+                const description = task.description
+                console.log(description)
+                const dueDate = task.dueDate
+                console.log(dueDate)
+                const priority = task.priority
+                appendTaskCard(dataIndex, title, description, dueDate, priority)
+            })
+        }) 
+    }*/
+    
 
     //public functions
     return { 
-        appendTaskCard: (dataIndex) => {
+        //takes the dataindex (taskid), title, description and other input and creates
+        //the task card on the page
+        taskCard: (dataIndex, title, description, dueDate, priority) => {
         
-        const title = document.getElementById('task').value
-        const description = document.getElementById('description').value
-        const dueDate = document.getElementById('due').value
-        const priority = document.getElementById('prio').value;
-        
-
-        if (title == '' || dueDate == '') {
-            alert('Please make sure you have entered a title and date!')
-            return false
-        };
-        
-        const prioCheckedTaskDiv = checkPrio(makeTaskCardDiv(), priority)
-        prioCheckedTaskDiv.setAttribute('data-index', dataIndex)
-        appendElements(prioCheckedTaskDiv, makeTextDiv(title, description, dueDate), makeButtons(dataIndex, prioCheckedTaskDiv))},
+            const prioCheckedTaskDiv = checkPrio(makeTaskCardDiv(), priority)
+            prioCheckedTaskDiv.setAttribute('data-index', dataIndex)
+            appendElements(prioCheckedTaskDiv, makeTextDiv(title, description, dueDate), makeButtons(dataIndex, prioCheckedTaskDiv)
+            
+            )},
     
-        newListTab: (listIndex) => {
-            const title = document.getElementById('new-list-name-main').value;
-            makeNewListTab(title);   
-        }
+
+        //new list
+        newListTab: (title) => {
+            makeNewListTab(title, listLogic.getListId());   
+        }        
     }
 })()
 
-/////--------------------------****************************testtttsss
-const addButton = document.getElementById('add-button');
-addButton.addEventListener('click', () => {
-    
+/*listeners for the persistent html elements; dynamic elements have listeners added
+at the time of their generation*/
 
-    const title = document.getElementById('task').value;
-    const description = document.getElementById('description').value;
-    const dueDate = document.getElementById('due').value;
-    const priority = document.getElementById('prio').value;
-    
 
-    const task = listLogic.newTask(title, description, dueDate, priority);
-    listLogic.addTask(task, helpers.getSelectedListId())
-    const listIndex = listLogic.getListIndex(); 
-    const dataIndex = listLogic.getDataIndex(helpers.getSelectedListId())
-    addTaskCard.appendTaskCard(dataIndex);
+const addListeners = (() => { 
+    const defaultListTab = document.getElementById('default-list-tab')
+    
+    defaultListTab.addEventListener('click', () => {
+        helpers.storeSelectedListId(0) 
+        const allButtons = document.querySelectorAll('.list-tab-button')
+        allButtons.forEach((button) => {
+            if (button.dataset.listId == helpers.getSelectedListId()) {
+                button.parentElement.classList.add('border-4', 'border-amber-200')        
+            } 
+            else {
+                button.parentElement.classList.remove('border-4', 'border-amber-200')
+            }
+        })
 
     })
 
-const newListButton = document.getElementById('new-list-menu-check')
-
-
-
-newListButton.addEventListener('click', ()=> {
-    addTaskCard.newListTab()
-})
-
-
-const newTask = (title, description, dueDate, priority, complete= false) => {
-    return {title, description, dueDate, priority, complete}
-}
-
-
-const matchListId = (id)=> {
-    listIndex.lists.forEach(list, () => {
-        if (list[id] == id) {
-            return true
+    const toggleVisible = (element) => {
+        if (element.classList.contains('hidden')) {
+            element.classList.add('block')
+            element.classList.remove('hidden')
         }
+
+        else if (element.classList.contains('block')) {
+            element.classList.add('hidden')
+            element.classList.remove('block')
+        }
+    }
+
+//main button = + button; main ui dropdown toggle
+
+    const mainButton = document.getElementById('main-button');
+    mainButton.addEventListener('click', ()=> {
+    
+        const dropDown = document.getElementById('dropdown-menu');
+        
+        if (dropDown.classList.contains('hidden')) {
+            dropDown.classList.add('block')
+            dropDown.classList.remove('hidden')
+        }
+        
+        else {
+            dropDown.classList.remove('block')
+            dropDown.classList.add('hidden')
+        }
+        
     })
-};
+
+   
+    //dropdown toggle for the new list input 
+   
+   const newListButton = document.getElementById('new-list-main');
+   const newListForm = document.getElementById('new-list-form')
+   newListButton.addEventListener('click', () => {
+    toggleVisible(newListForm)
+    })
+
+    
+    //new list button -- creates list object and adds it to the index
+    
+    const makeNewListButton = document.getElementById('new-list-menu-check')
+
+    makeNewListButton.addEventListener('click', () => {
+            const listIndex = listLogic.getListIndex()
+            const title = document.getElementById('new-list-name-main').value
+            const newList = listLogic.createListAndAddToIndex(title)
+            localStorage.store()
+            addTaskCard.newListTab(title)
+        })
+    
+    
+    //closes new list drop down
+    
+    
 
 
-
-const newList = (listName, listId) => {
-    return {
-    listName: listName,
-    listId: listId,
-    tasks: []
-    } 
-};
-
-const addListToIndex = (list, listIndex) => {
-    listIndex.lists.push(list)
-}
- 
-
-
-
-const addListButton = document.getElementById('new-list-menu-check');
-
-
-const randomtask = newTask('finish this', 'finish it by tomorrow or the day after', '6-16-1988', 'High')
-
-const addTaskToList = (randomtask, listIndex) => {
-    listIndex.lists.at(-1).tasks.push(randomtask);
-}
-
-
-
-const matchForList = (Id) => {
-    for (let list in listIndex.lists) {
-        if (list.listId == Id) {
-        return list; 
+    const cancelNewListButton = document.getElementById('cancel-new-list-menu-x');
+    cancelNewListButton.addEventListener('click', () => {
+        
+        const newListForm  = document.getElementById('new-list-form');
+        
+        if (newListForm.classList.contains('hidden')) {
+            newListForm.classList.add('block');
+            newListForm.classList.remove('hidden');
         }
-    }
-}
-
-const matchId = (id) => {
-    for (let i= 0; i < listIndex.lists.length; i++) {
-        if (listIndex.lists.at(i).listId == id) {
-            console.log('bingo')
-            console.log(listIndex.lists.at(i).listName)
+        
+        else {
+            newListForm.classList.remove('block')
+            newListForm.classList.add('hidden')
         }
-    }
-}
 
-const listIndex = listLogic.getListIndex()
+    })
 
-const getNewListId = (listIndex) => {
+    //closes dropdown for new task
+    const cancelAddButton = document.getElementById('cancel-add') 
+    cancelAddButton.addEventListener('click', () => {
+        
+        const dropDown = document.getElementById('new-task-form');
+        
+        dropDown.classList.add('hidden')
+        dropDown.classList.remove('block')
+    })
 
-    if (listIndex.lists.length == 0) {
-        var listId = 1
-        return listId
-    }
-    else if (listIndex.lists.length > 0) {
-        var listId = listIndex.lists.at(-1).listId+1
-        return listId
-    }
-}
+    //dropdown script for new task button
+    const newTaskButton = document.getElementById('new-task');
+    newTaskButton.addEventListener('click', () => {
+        
+        const taskForm = document.getElementById('new-task-form');
+        
+        if (taskForm.classList.contains('hidden')) {
+            taskForm.classList.add('block');
+            taskForm.classList.remove('hidden');
+        }
+        else {
+            taskForm.classList.remove('block')
+            taskForm.classList.add('hidden')
+        }
 
+    })
 
+    
+    //adds the actual task and appends a new task div and adds task to list
+    const addButton = document.getElementById('add-button');
+    addButton.addEventListener('click', () => {
+        //get values from form, creates task object and ads task to appropriate list; 
+        //also adds the div  
+        const dataIndex = listLogic.newDataIndex();
+        const title = document.getElementById('task').value;
+        const description = document.getElementById('description').value;
+        const dueDate = document.getElementById('due').value;
+        const priority = document.getElementById('prio').value;
+        const task = listLogic.newTask(title, description, dueDate, priority, dataIndex);
+        listLogic.addTask(task, helpers.getSelectedListId())
+        /*localStorage.store()*/
+        addTaskCard.taskCard(dataIndex, title, description, dueDate, priority);
+    
+    })
+    
 
- 
+})()
 
-newListButton.addEventListener('click', () => {
-    console.log(helpers.getSelectedListId())
-    const title = document.getElementById('new-list-name-main').value
-    const list = newList(title, getNewListId(listIndex))
-    addListToIndex(list, listIndex)
-    addTaskToList(randomtask, listIndex)
-    console.log(listIndex.lists)
-})
-
-console.log(listLogic.getListIndex())
-console.log(listLogic.newListId(listLogic.getListIndex()))
-
-//a div grid will need to be added for each new list, and hidden applied to every other grid; or completely dynamically generated each time clicked.
-
-//the selected list will need to have an id; the selected list will need to have 
-
-/*in terms of the dom, every time a list button is clicked, the DOM should generate 
-all the tasks on the list onto the screen; this can be accomplished one of two ways
-we can have all of the elements rendered each time the list is clicked by looping
-through the stored list or we can use css to hide and reveal the lists each time they
-are clicked; i think rendering from the existing data is probably the best way; a lot of
-potential issues the other way; so basically.. each list's tasks will be rendered to the dom
-i am going to get very good at list and object syntax oof haha*/
+//check for storage list elements and build page with those items

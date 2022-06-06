@@ -1,2 +1,3 @@
-# tailwind-config-and-code
-This is just a personally built working webpack config that incorporates Tailwind, along with some JavaScript component builders that are easy to reuse (for me).
+To-Do-List
+
+This is a to-do-list app built with vanilla JS, HTML, and CSS. For the CSS, I used TailWind. There are some interactive JavaScript elements for the page (simple dropdowns) and tasks are tracked with an underlying list logic system and displayed dynamically on the screen. A simple app but I learned a lot about array and object manipulation, local storage, and attempted to use the closed module pattern to separate code and variables. 
